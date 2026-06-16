@@ -166,7 +166,7 @@ function DashboardPage() {
         reportRef.current,
         `dashboard_${cursoTag}_${periodoTag}_${stamp}.pdf`,
         {
-          title: "Dashboard CESCA",
+          title: "Dashboard NAZARETH",
           subtitle: `${data?.cursoLabel ?? ""} · ${materia || "Todas las materias"} · ${periodo || "Todo el año"} · ${desde} a ${hasta}`,
         },
       );

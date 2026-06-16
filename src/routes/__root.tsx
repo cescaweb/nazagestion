@@ -95,18 +95,18 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CESCA SGE" },
+      { title: "NAZARETH SGE" },
       { name: "description", content: "Sistema de Gestion Escolar" },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "CESCA SGE" },
+      { property: "og:title", content: "NAZARETH SGE" },
       { property: "og:description", content: "Sistema de Gestion Escolar" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "CESCA SGE" },
+      { name: "twitter:title", content: "NAZARETH SGE" },
       { name: "twitter:description", content: "Sistema de Gestion Escolar" },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/up39Kb8IyDSOd0FfjNVcpP9i4lB2/social-images/social-1779398319889-LogoCesca.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/up39Kb8IyDSOd0FfjNVcpP9i4lB2/social-images/social-1779398319889-LogoCesca.webp" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/up39Kb8IyDSOd0FfjNVcpP9i4lB2/social-images/social-1781609225402-logo_NAZ.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/up39Kb8IyDSOd0FfjNVcpP9i4lB2/social-images/social-1781609225402-logo_NAZ.webp" },
     ],
     links: [
       {

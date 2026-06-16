@@ -21,7 +21,7 @@ import {
 export const Route = createFileRoute("/calificaciones/")({
   head: () => ({
     meta: [
-      { title: "Cargar calificaciones · CESCA" },
+      { title: "Cargar calificaciones · NAZARETH" },
     ],
   }),
   component: CargarNotas,

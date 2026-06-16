@@ -15,7 +15,7 @@ import { getReportePreInformes } from "@/lib/preinformes.functions";
 import { BatchExportButton } from "@/components/BatchExportButton";
 
 export const Route = createFileRoute("/pre-informes/reporte")({
-  head: () => ({ meta: [{ title: "Reporte de pre-informes · CESCA" }] }),
+  head: () => ({ meta: [{ title: "Reporte de pre-informes · NAZARETH" }] }),
   component: ReportePreInformes,
 });
 

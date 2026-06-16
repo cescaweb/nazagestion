@@ -21,7 +21,7 @@ import {
 } from "@/lib/preinformes.functions";
 
 export const Route = createFileRoute("/pre-informes/")({
-  head: () => ({ meta: [{ title: "Cargar pre-informes · CESCA" }] }),
+  head: () => ({ meta: [{ title: "Cargar pre-informes · NAZARETH" }] }),
   component: CargarPreInformes,
 });
 

@@ -11,7 +11,7 @@ import { PreInformePrintable } from "@/components/PreInformePrintable";
 import { exportElementToPDF } from "@/lib/pdf-export";
 
 export const Route = createFileRoute("/pre-informes/alumno")({
-  head: () => ({ meta: [{ title: "Pre-Informe por alumno · CESCA" }] }),
+  head: () => ({ meta: [{ title: "Pre-Informe por alumno · NAZARETH" }] }),
   component: PreInformeAlumno,
 });
 

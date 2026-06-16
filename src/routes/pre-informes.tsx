@@ -5,7 +5,7 @@ export const Route = createFileRoute("/pre-informes")({
   beforeLoad: guardSection("pre-informes"),
   head: () => ({
     meta: [
-      { title: "Pre-Informes · CESCA" },
+      { title: "Pre-Informes · NAZARETH" },
       { name: "description", content: "Carga y consulta de pre-informes pedagógicos por curso y materia." },
     ],
   }),

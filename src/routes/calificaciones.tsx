@@ -5,7 +5,7 @@ export const Route = createFileRoute("/calificaciones")({
   beforeLoad: guardSection("calificaciones"),
   head: () => ({
     meta: [
-      { title: "Calificaciones · CESCA" },
+      { title: "Calificaciones · NAZARETH" },
       { name: "description", content: "Carga y consulta de calificaciones por curso, materia y cuatrimestre." },
     ],
   }),

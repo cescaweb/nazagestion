@@ -15,7 +15,7 @@ import { getMaterias, getReporteMateria } from "@/lib/grades.functions";
 import { BatchExportButton } from "@/components/BatchExportButton";
 
 export const Route = createFileRoute("/calificaciones/reporte")({
-  head: () => ({ meta: [{ title: "Reporte de calificaciones · CESCA" }] }),
+  head: () => ({ meta: [{ title: "Reporte de calificaciones · NAZARETH" }] }),
   component: ReporteMateria,
 });
 

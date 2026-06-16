@@ -37,7 +37,7 @@ export const Route = createFileRoute("/dashboard")({
   beforeLoad: guardSection("dashboard"),
   head: () => ({
     meta: [
-      { title: "Dashboard · CESCA SGE" },
+      { title: "Dashboard · NAZARETH SGE" },
       { name: "description", content: "Estadísticas de presentismo, calificaciones y pre-informes." },
     ],
   }),

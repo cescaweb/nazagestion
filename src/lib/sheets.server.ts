@@ -1,6 +1,6 @@
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_sheets/v4";
 
-export const SHEET_ID = "1Y7ffSaIjF-vptuxtOnLpRZWw-H4mBR5VFmHeRIeB_14";
+export const SHEET_ID = "1OrWi_sK1TBBAg5gkQokiF9xZ5IVwzstZ69Zvj_RjNOA";
 
 function getHeaders() {
   const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;

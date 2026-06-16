@@ -11,7 +11,7 @@ import { BoletinPrintable } from "@/components/BoletinPrintable";
 import { exportElementToPDF } from "@/lib/pdf-export";
 
 export const Route = createFileRoute("/calificaciones/boletin")({
-  head: () => ({ meta: [{ title: "Boletín por alumno · CESCA" }] }),
+  head: () => ({ meta: [{ title: "Boletín por alumno · NAZARETH" }] }),
   component: Boletin,
 });
 

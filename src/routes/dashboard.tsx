@@ -37,7 +37,7 @@ export const Route = createFileRoute("/dashboard")({
   beforeLoad: guardSection("dashboard"),
   head: () => ({
     meta: [
-      { title: "Dashboard · CESCA SGE" },
+      { title: "Dashboard · NAZARETH SGE" },
       { name: "description", content: "Estadísticas de presentismo, calificaciones y pre-informes." },
     ],
   }),
@@ -166,7 +166,7 @@ function DashboardPage() {
         reportRef.current,
         `dashboard_${cursoTag}_${periodoTag}_${stamp}.pdf`,
         {
-          title: "Dashboard CESCA",
+          title: "Dashboard NAZARETH",
           subtitle: `${data?.cursoLabel ?? ""} · ${materia || "Todas las materias"} · ${periodo || "Todo el año"} · ${desde} a ${hasta}`,
         },
       );

@@ -18,7 +18,7 @@ export const Route = createFileRoute("/reportes")({
   beforeLoad: guardSection("reportes"),
   head: () => ({
     meta: [
-      { title: "Reportes por curso · CESCA" },
+      { title: "Reportes por curso · NAZARETH" },
       { name: "description", content: "Reportes de asistencia por curso y rango de fechas." },
     ],
   }),

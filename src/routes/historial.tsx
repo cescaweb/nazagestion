@@ -10,7 +10,7 @@ export const Route = createFileRoute("/historial")({
   beforeLoad: guardSection("historial"),
   head: () => ({
     meta: [
-      { title: "Historial por alumno · CESCA" },
+      { title: "Historial por alumno · NAZARETH" },
       { name: "description", content: "Historial de asistencias por alumno." },
     ],
   }),

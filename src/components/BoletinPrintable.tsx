@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import logoCesca from "@/assets/logo-cesca.png";
+import logoNazareth from "@/assets/logo-nazareth.jpg.asset.json";
 
 type Alumno = {
   dni: string;
@@ -57,24 +57,21 @@ export const BoletinPrintable = forwardRef<HTMLDivElement, Props>(
           }}
         >
           <img
-            src={logoCesca}
-            alt="CESCA"
+            src={logoNazareth.url}
+            alt="NAZARETH"
             crossOrigin="anonymous"
             style={{
               width: "52px",
-              height: "52px",
-              background: "#ffffff",
-              borderRadius: "50%",
-              padding: "3px",
+              height: "auto",
               objectFit: "contain",
             }}
           />
           <div>
             <div style={{ fontSize: "15px", fontWeight: 700 }}>
-              CENTRO EDUCATIVO SANTA CLARA DE ASÍS
+              NAZARETH
             </div>
             <div style={{ fontSize: "11px", color: "#dde3f3", marginTop: "2px" }}>
-              Boletín de Calificaciones · Ciclo Lectivo {ciclo}
+              Educar es Amar · Boletín de Calificaciones · Ciclo Lectivo {ciclo}
             </div>
           </div>
         </div>

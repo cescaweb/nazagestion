@@ -13,7 +13,7 @@ export const Route = createFileRoute("/feriados")({
   beforeLoad: guardSection("feriados"),
   head: () => ({
     meta: [
-      { title: "Feriados · CESCA" },
+      { title: "Feriados · NAZARETH" },
       { name: "description", content: "Gestión de feriados que descuentan días hábiles del ciclo escolar." },
     ],
   }),

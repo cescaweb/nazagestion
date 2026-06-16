@@ -63,7 +63,7 @@
 
 :root {
   --radius: 0.625rem;
-  /* CESCA palette: deep navy + institutional red + warm off-white */
+  /* NAZARETH palette: deep navy + warm brown/gold accent */
   --background: oklch(0.99 0.005 80);
   --foreground: oklch(0.18 0.04 260);
   --card: oklch(1 0 0);

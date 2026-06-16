@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { loginFn, getSessionFn } from "@/lib/auth.functions";
 import { defaultRouteFor } from "@/lib/permissions";
-import logoCesca from "@/assets/logo-cesca.png";
+import logoNazareth from "@/assets/logo-nazareth.jpg.asset.json";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/login")({
   },
   head: () => ({
     meta: [
-      { title: "Ingresar · CESCA" },
+      { title: "Ingresar · NAZARETH" },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -61,10 +61,10 @@ function LoginPage() {
     <div className="flex min-h-[calc(100vh-2rem)] items-center justify-center px-4">
       <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-sm">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
-          <img src={logoCesca} alt="Logo CESCA" className="h-16 w-16 rounded-full bg-white object-contain p-1 shadow" />
+          <img src={logoNazareth.url} alt="Logo NAZARETH" className="h-16 w-auto object-contain" />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">CESCA · Sistema de Gestión</h1>
-            <p className="text-xs text-muted-foreground">Ingresá con tu usuario institucional</p>
+            <h1 className="text-lg font-semibold text-foreground">NAZARETH</h1>
+            <p className="text-xs text-muted-foreground">Educar es Amar</p>
           </div>
         </div>
         <form onSubmit={onSubmit} className="space-y-3">

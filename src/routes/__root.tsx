@@ -135,7 +135,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-import logoCesca from "@/assets/logo-cesca.png";
+import logoNazareth from "@/assets/logo-nazareth.jpg.asset.json";
 
 function RootComponent() {
   const ctx = Route.useRouteContext() as { queryClient: QueryClient; session: PublicSession };
@@ -179,16 +179,16 @@ function RootComponent() {
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 md:px-6 md:py-3">
             <Link to="/" className="flex items-center gap-2 md:gap-3 min-w-0">
               <img
-                src={logoCesca}
-                alt="Logo CESCA"
-                className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-white object-contain p-0.5 shadow shrink-0"
+                src={logoNazareth.url}
+                alt="Logo NAZARETH"
+                className="h-9 w-auto md:h-10 object-contain shrink-0"
               />
               <div className="leading-tight min-w-0">
                 <div className="text-sm font-semibold tracking-wide truncate">
-                  CESCA · Sistema de Gestión
+                  NAZARETH
                 </div>
                 <div className="hidden sm:block text-[11px] uppercase tracking-widest text-primary-foreground/60">
-                  Santa Clara de Asís - DIEGEP 5184
+                  Educar es Amar
                 </div>
               </div>
             </Link>

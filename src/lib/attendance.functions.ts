@@ -247,16 +247,16 @@ export const getHistorialAlumno = createServerFn({ method: "POST" })
       .filter((r) => r.dni === data.dni)
       .sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
     const total = propios.length;
-    const presentes = propios.filter((r) => r.estado === "Presente").length;
     const tardes = propios.filter((r) => r.estado === "Tarde").length;
     const ausentes = propios.filter((r) => r.estado === "Ausente").length;
     const justificados = propios.filter((r) => r.estado === "Justificado").length;
     const hoy = new Date().toISOString().slice(0, 10);
     const diasEsperados = habilesEnRango(CICLO_INICIO, hoy, feriadosExtra);
-    const asistidos = presentes + 0.5 * tardes + justificados;
+    const presentes = Math.max(0, diasEsperados - ausentes - tardes - justificados);
+    const asistidos = diasEsperados - ausentes - 0.5 * tardes;
     const pct =
       diasEsperados > 0
-        ? Math.min(100, Math.round((asistidos / diasEsperados) * 100))
+        ? Math.max(0, Math.min(100, Math.round((asistidos / diasEsperados) * 100)))
         : 0;
     return {
       registros: propios,
@@ -289,16 +289,16 @@ export const getReporteCurso = createServerFn({ method: "POST" })
           r.dni === a.dni && r.fecha >= data.desde && r.fecha <= data.hasta,
       );
       const total = propios.length;
-      const presentes = propios.filter((r) => r.estado === "Presente").length;
       const tardes = propios.filter((r) => r.estado === "Tarde").length;
       const ausentes = propios.filter((r) => r.estado === "Ausente").length;
       const justificados = propios.filter(
         (r) => r.estado === "Justificado",
       ).length;
-      const asistidos = presentes + 0.5 * tardes + justificados;
+      const presentes = Math.max(0, diasEsperados - ausentes - tardes - justificados);
+      const asistidos = diasEsperados - ausentes - 0.5 * tardes;
       const pct =
         diasEsperados > 0
-          ? Math.min(100, Math.round((asistidos / diasEsperados) * 100))
+          ? Math.max(0, Math.min(100, Math.round((asistidos / diasEsperados) * 100)))
           : 0;
       return {
         dni: a.dni,

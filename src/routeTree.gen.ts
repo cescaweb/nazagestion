@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ReportesRouteImport } from './routes/reportes'
 import { Route as PreInformesRouteImport } from './routes/pre-informes'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as HistorialRouteImport } from './routes/historial'
 import { Route as FeriadosRouteImport } from './routes/feriados'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CalificacionesRouteImport } from './routes/calificaciones'
@@ -37,11 +36,6 @@ const PreInformesRoute = PreInformesRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HistorialRoute = HistorialRouteImport.update({
-  id: '/historial',
-  path: '/historial',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeriadosRoute = FeriadosRouteImport.update({
@@ -100,7 +94,6 @@ export interface FileRoutesByFullPath {
   '/calificaciones': typeof CalificacionesRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/feriados': typeof FeriadosRoute
-  '/historial': typeof HistorialRoute
   '/login': typeof LoginRoute
   '/pre-informes': typeof PreInformesRouteWithChildren
   '/reportes': typeof ReportesRoute
@@ -115,7 +108,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/feriados': typeof FeriadosRoute
-  '/historial': typeof HistorialRoute
   '/login': typeof LoginRoute
   '/reportes': typeof ReportesRoute
   '/calificaciones/boletin': typeof CalificacionesBoletinRoute
@@ -131,7 +123,6 @@ export interface FileRoutesById {
   '/calificaciones': typeof CalificacionesRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/feriados': typeof FeriadosRoute
-  '/historial': typeof HistorialRoute
   '/login': typeof LoginRoute
   '/pre-informes': typeof PreInformesRouteWithChildren
   '/reportes': typeof ReportesRoute
@@ -149,7 +140,6 @@ export interface FileRouteTypes {
     | '/calificaciones'
     | '/dashboard'
     | '/feriados'
-    | '/historial'
     | '/login'
     | '/pre-informes'
     | '/reportes'
@@ -164,7 +154,6 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/feriados'
-    | '/historial'
     | '/login'
     | '/reportes'
     | '/calificaciones/boletin'
@@ -179,7 +168,6 @@ export interface FileRouteTypes {
     | '/calificaciones'
     | '/dashboard'
     | '/feriados'
-    | '/historial'
     | '/login'
     | '/pre-informes'
     | '/reportes'
@@ -196,7 +184,6 @@ export interface RootRouteChildren {
   CalificacionesRoute: typeof CalificacionesRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   FeriadosRoute: typeof FeriadosRoute
-  HistorialRoute: typeof HistorialRoute
   LoginRoute: typeof LoginRoute
   PreInformesRoute: typeof PreInformesRouteWithChildren
   ReportesRoute: typeof ReportesRoute
@@ -223,13 +210,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/historial': {
-      id: '/historial'
-      path: '/historial'
-      fullPath: '/historial'
-      preLoaderRoute: typeof HistorialRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feriados': {
@@ -342,7 +322,6 @@ const rootRouteChildren: RootRouteChildren = {
   CalificacionesRoute: CalificacionesRouteWithChildren,
   DashboardRoute: DashboardRoute,
   FeriadosRoute: FeriadosRoute,
-  HistorialRoute: HistorialRoute,
   LoginRoute: LoginRoute,
   PreInformesRoute: PreInformesRouteWithChildren,
   ReportesRoute: ReportesRoute,
@@ -350,13 +329,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

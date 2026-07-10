@@ -30,8 +30,8 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "Tomar asistencia · NAZARETH" },
-      { name: "description", content: "Sistema de asistencia diaria para alumnos." },
+      { title: "NAZARETH SGE" },
+      { name: "description", content: "Sistema de Gestion Escolar" },
     ],
   }),
   component: TomarAsistencia,

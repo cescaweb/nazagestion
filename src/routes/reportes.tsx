@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Download } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -13,6 +14,9 @@ import {
 } from "@/components/ui/select";
 import { getCursos, getReporteCurso } from "@/lib/attendance.functions";
 import { guardSection } from "@/lib/route-guards";
+import { canGeneratePdf } from "@/lib/permissions";
+import { ReporteAsistenciaPrintable } from "@/components/ReporteAsistenciaPrintable";
+import { exportElementToPDF } from "@/lib/pdf-export";
 
 export const Route = createFileRoute("/reportes")({
   beforeLoad: guardSection("reportes"),
@@ -36,9 +40,17 @@ function today() {
 }
 
 function Reportes() {
+  const { session } = Route.useRouteContext() as {
+    session: import("@/lib/auth.functions").PublicSession;
+  };
+  const puedePdf = !!session && canGeneratePdf(session.rol);
+
   const [cursoId, setCursoId] = useState("");
   const [desde, setDesde] = useState(firstOfMonth());
   const [hasta, setHasta] = useState(today());
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const printRef = useRef<HTMLDivElement | null>(null);
 
   const cursosFn = useServerFn(getCursos);
   const reporteFn = useServerFn(getReporteCurso);
@@ -50,36 +62,22 @@ function Reportes() {
     enabled: !!cursoId && !!desde && !!hasta,
   });
 
-  function exportCSV() {
-    if (!reporteQ.data) return;
-    const header = [
-      "DNI",
-      "Apellido",
-      "Nombre",
-      "Total",
-      "Presentes",
-      "Ausentes",
-      "Tardes",
-      "Justificados",
-      "Dias_Esperados",
-      "% Asistencia",
-    ];
-    const lines = [header.join(",")];
-    for (const f of reporteQ.data.filas) {
-      lines.push(
-        [f.dni, f.apellido, f.nombre, f.total, f.presentes, f.ausentes, f.tardes, f.justificados, f.diasEsperados, f.pct]
-          .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-          .join(","),
-      );
-    }
+  const cursoLabel =
+    cursosQ.data?.cursos.find((c) => c.id === cursoId)?.label ?? "curso";
 
-    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `reporte_${reporteQ.data.curso?.label ?? "curso"}_${desde}_${hasta}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  async function handleDownloadPdf() {
+    if (!printRef.current || !reporteQ.data) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const safe = cursoLabel.replace(/[^a-zA-Z0-9]/g, "_");
+      await exportElementToPDF(printRef.current, `reporte_${safe}_${desde}_${hasta}.pdf`);
+    } catch (e) {
+      console.error(e);
+      setError(e instanceof Error ? e.message : "No se pudo generar el PDF");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -115,15 +113,18 @@ function Reportes() {
           <label className="text-xs font-medium text-muted-foreground">Hasta</label>
           <Input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} className="h-10" />
         </div>
-        <div className="flex items-end sm:col-span-2 lg:col-span-1">
-          <Button
-            variant="outline"
-            onClick={exportCSV}
-            disabled={!reporteQ.data || reporteQ.data.filas.length === 0}
-            className="h-10 w-full lg:w-auto"
-          >
-            Exportar CSV
-          </Button>
+        <div className="flex flex-col items-end gap-1 sm:col-span-2 lg:col-span-1">
+          {puedePdf && (
+            <Button
+              onClick={handleDownloadPdf}
+              disabled={!reporteQ.data || reporteQ.data.filas.length === 0 || busy}
+              className="h-10 w-full lg:w-auto"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {busy ? "Generando…" : "Descargar PDF"}
+            </Button>
+          )}
+          {error && <span className="text-xs text-red-700">{error}</span>}
         </div>
       </div>
 
@@ -133,7 +134,8 @@ function Reportes() {
             <div className="text-xs text-muted-foreground">
               Días hábiles esperados en el rango (lun-vie, sin receso ni feriados):{" "}
               <span className="font-semibold text-foreground">{reporteQ.data.diasEsperados}</span>.
-              Tarde = ½ asistencia. Justificado computa como asistido.
+              Se registran solo excepciones (Ausente, Tarde, Justificado); los alumnos sin registro se consideran Presentes.
+              Tarde = ½ ausencia. Justificado no resta.
             </div>
           )}
           <div className="overflow-x-auto rounded-lg border">
@@ -146,21 +148,20 @@ function Reportes() {
                   <th className="px-4 py-2 text-right">A</th>
                   <th className="px-4 py-2 text-right">T</th>
                   <th className="px-4 py-2 text-right">J</th>
-                  <th className="px-4 py-2 text-right">Cargados</th>
                   <th className="px-4 py-2 text-right">Esperados</th>
-                  <th className="px-4 py-2 text-right">% Asist. (real)</th>
+                  <th className="px-4 py-2 text-right">% Asist.</th>
                 </tr>
               </thead>
               <tbody>
                 {reporteQ.isLoading ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                       Cargando...
                     </td>
                   </tr>
                 ) : (reporteQ.data?.filas ?? []).length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                       Sin datos en el rango.
                     </td>
                   </tr>
@@ -175,7 +176,6 @@ function Reportes() {
                       <td className="px-4 py-2 text-right">{f.ausentes}</td>
                       <td className="px-4 py-2 text-right">{f.tardes}</td>
                       <td className="px-4 py-2 text-right">{f.justificados}</td>
-                      <td className="px-4 py-2 text-right">{f.total}</td>
                       <td className="px-4 py-2 text-right">{f.diasEsperados}</td>
                       <td className="px-4 py-2 text-right font-semibold">
                         {f.diasEsperados > 0 ? `${f.pct}%` : "—"}
@@ -189,6 +189,22 @@ function Reportes() {
         </div>
       )}
 
+      {/* Off-screen printable used for PDF capture */}
+      {reporteQ.data && (
+        <div
+          aria-hidden
+          style={{ position: "fixed", left: "-10000px", top: 0, pointerEvents: "none" }}
+        >
+          <ReporteAsistenciaPrintable
+            ref={printRef}
+            cursoLabel={cursoLabel}
+            desde={desde}
+            hasta={hasta}
+            diasEsperados={reporteQ.data.diasEsperados}
+            filas={reporteQ.data.filas}
+          />
+        </div>
+      )}
     </div>
   );
 }

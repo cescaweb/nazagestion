@@ -13,6 +13,7 @@ import {
 import { getCursos } from "@/lib/attendance.functions";
 import { getMaterias, getReporteMateria } from "@/lib/grades.functions";
 import { BatchExportButton } from "@/components/BatchExportButton";
+import { canGeneratePdf } from "@/lib/permissions";
 
 export const Route = createFileRoute("/calificaciones/reporte")({
   head: () => ({ meta: [{ title: "Reporte de calificaciones · NAZARETH" }] }),
@@ -20,6 +21,10 @@ export const Route = createFileRoute("/calificaciones/reporte")({
 });
 
 function ReporteMateria() {
+  const { session } = Route.useRouteContext() as {
+    session: import("@/lib/auth.functions").PublicSession;
+  };
+  const puedePdf = !!session && canGeneratePdf(session.rol);
   const [cursoId, setCursoId] = useState("");
   const [materia, setMateria] = useState("");
   const [cuatrimestre, setCuatrimestre] = useState("1");

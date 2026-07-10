@@ -15,7 +15,13 @@ export const Route = createFileRoute("/calificaciones/boletin")({
   component: Boletin,
 });
 
+import { canGeneratePdf } from "@/lib/permissions";
+
 function Boletin() {
+  const { session } = Route.useRouteContext() as {
+    session: import("@/lib/auth.functions").PublicSession;
+  };
+  const puedePdf = !!session && canGeneratePdf(session.rol);
   const [q, setQ] = useState("");
   const [dni, setDni] = useState("");
   const [busy, setBusy] = useState(false);
@@ -120,10 +126,12 @@ function Boletin() {
                 : "Alumno"}
             </h2>
             <div className="flex flex-col items-end gap-1">
-              <Button onClick={handleDownload} disabled={busy}>
-                <Download className="mr-2 h-4 w-4" />
-                {busy ? "Generando…" : "Descargar PDF"}
-              </Button>
+              {puedePdf && (
+                <Button onClick={handleDownload} disabled={busy}>
+                  <Download className="mr-2 h-4 w-4" />
+                  {busy ? "Generando…" : "Descargar PDF"}
+                </Button>
+              )}
               {error && <span className="text-xs text-red-700">{error}</span>}
             </div>
           </div>

@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getValues, rowsToObjects } from "./sheets.server";
+import { habilesEnRango, CICLO_INICIO, CICLO_FIN } from "./school-calendar";
+import { getFeriadosSet } from "./feriados.functions";
 
 export type DashboardFilters = {
   cursoId?: string;
@@ -54,12 +56,13 @@ export const getDashboardStats = createServerFn({ method: "POST" })
       throw new Error("No autorizado");
     }
 
-    const [cursosRows, alumnosRows, asistRows, califRows, piRows] = await Promise.all([
+    const [cursosRows, alumnosRows, asistRows, califRows, piRows, feriadosExtra] = await Promise.all([
       getValues("CURSOS!A1:G"),
       getValues("alumnos!A1:K"),
       getValues("ASISTENCIA!A1:I"),
       getValues("calificaciones!A1:Q"),
       getValues("PRE_INFORMES!A1:K"),
+      getFeriadosSet(),
     ]);
 
     const cursos = rowsToObjects(cursosRows).map((o) => ({
@@ -89,10 +92,11 @@ export const getDashboardStats = createServerFn({ method: "POST" })
       });
     const dniSet = new Set(alumnos.map((a) => a.dni));
 
-    // ---- ASISTENCIA ----
+    // ---- ASISTENCIA (modelo por excepción: solo se registran ausentes/tardes/justificados) ----
     const asistObjs = rowsToObjects(asistRows);
-    const desde = data.desde || "0000-00-00";
-    const hasta = data.hasta || "9999-99-99";
+    const hoyISO = new Date().toISOString().slice(0, 10);
+    const desde = data.desde || CICLO_INICIO;
+    const hasta = data.hasta || (hoyISO < CICLO_FIN ? hoyISO : CICLO_FIN);
     const asistFiltered = asistObjs
       .map((o) => ({
         fecha: o["Fecha"] ?? "",
@@ -102,47 +106,64 @@ export const getDashboardStats = createServerFn({ method: "POST" })
         tarde: (o["Tarde"] ?? "").trim() !== "",
         justificado: (o["Justificado"] ?? "").trim() !== "",
       }))
-      .filter((r) => r.fecha >= desde && r.fecha <= hasta && (!curso || dniSet.has(r.dni)));
+      .filter((r) => r.fecha >= desde && r.fecha <= hasta && dniSet.has(r.dni));
 
     const totalAsist = asistFiltered.length;
-    const totalPresentes = asistFiltered.filter((r) => r.presente).length;
+    const totalAusentes = asistFiltered.filter((r) => r.ausente).length;
     const totalTardes = asistFiltered.filter((r) => r.tarde).length;
-    const presentismoPct = totalAsist > 0 ? Math.round(((totalPresentes + totalTardes) / totalAsist) * 100) : 0;
 
-    const porDiaMap = new Map<string, { presentes: number; ausentes: number; tardes: number; justificados: number }>();
+    const diasEsperadosRango = habilesEnRango(desde, hasta, feriadosExtra);
+    const nAlumnos = alumnos.length;
+    const denomGlobal = diasEsperadosRango * nAlumnos;
+    const presentismoPct =
+      denomGlobal > 0
+        ? Math.max(
+            0,
+            Math.min(
+              100,
+              Math.round(((denomGlobal - totalAusentes - 0.5 * totalTardes) / denomGlobal) * 100),
+            ),
+          )
+        : 0;
+
+    const porDiaMap = new Map<string, { ausentes: number; tardes: number; justificados: number }>();
     for (const r of asistFiltered) {
-      const e = porDiaMap.get(r.fecha) ?? { presentes: 0, ausentes: 0, tardes: 0, justificados: 0 };
-      if (r.presente) e.presentes++;
-      else if (r.ausente) e.ausentes++;
+      const e = porDiaMap.get(r.fecha) ?? { ausentes: 0, tardes: 0, justificados: 0 };
+      if (r.ausente) e.ausentes++;
       else if (r.tarde) e.tardes++;
       else if (r.justificado) e.justificados++;
       porDiaMap.set(r.fecha, e);
     }
     const presentismoPorDia = Array.from(porDiaMap.entries())
       .map(([fecha, v]) => {
-        const t = v.presentes + v.ausentes + v.tardes + v.justificados;
-        return {
-          fecha,
-          ...v,
-          pct: t > 0 ? Math.round(((v.presentes + v.tardes) / t) * 100) : 0,
-        };
+        const presentes = Math.max(0, nAlumnos - v.ausentes - v.tardes - v.justificados);
+        const pct =
+          nAlumnos > 0
+            ? Math.max(0, Math.min(100, Math.round(((nAlumnos - v.ausentes - 0.5 * v.tardes) / nAlumnos) * 100)))
+            : 0;
+        return { fecha, presentes, ausentes: v.ausentes, tardes: v.tardes, justificados: v.justificados, pct };
       })
       .sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
 
-    const porAlumnoMap = new Map<string, { pres: number; total: number }>();
+    const porAlumnoMap = new Map<string, { aus: number; tar: number; jus: number }>();
     for (const r of asistFiltered) {
-      const e = porAlumnoMap.get(r.dni) ?? { pres: 0, total: 0 };
-      e.total++;
-      if (r.presente || r.tarde) e.pres++;
+      const e = porAlumnoMap.get(r.dni) ?? { aus: 0, tar: 0, jus: 0 };
+      if (r.ausente) e.aus++;
+      else if (r.tarde) e.tar++;
+      else if (r.justificado) e.jus++;
       porAlumnoMap.set(r.dni, e);
     }
-    const presentismoPorAlumno = Array.from(porAlumnoMap.entries())
-      .map(([dni, v]) => {
-        const a = alumnos.find((x) => x.dni === dni);
+    const presentismoPorAlumno = alumnos
+      .map((a) => {
+        const v = porAlumnoMap.get(a.dni) ?? { aus: 0, tar: 0, jus: 0 };
+        const pct =
+          diasEsperadosRango > 0
+            ? Math.max(0, Math.min(100, Math.round(((diasEsperadosRango - v.aus - 0.5 * v.tar) / diasEsperadosRango) * 100)))
+            : 0;
         return {
-          alumno: a ? `${a.apellido}, ${a.nombre}` : dni,
-          pct: v.total > 0 ? Math.round((v.pres / v.total) * 100) : 0,
-          total: v.total,
+          alumno: `${a.apellido}, ${a.nombre}`,
+          pct,
+          total: diasEsperadosRango,
         };
       })
       .sort((a, b) => b.pct - a.pct);

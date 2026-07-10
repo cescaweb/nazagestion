@@ -37,7 +37,8 @@ export const Route = createFileRoute("/")({
   component: TomarAsistencia,
 });
 
-const ESTADOS: Estado[] = ["Presente", "Ausente", "Tarde", "Justificado"];
+// UI solo registra excepciones. Por defecto todos están Presente.
+const ESTADOS_UI: Estado[] = ["Ausente", "Tarde", "Justificado"];
 
 function today() {
   const d = new Date();
@@ -48,6 +49,7 @@ function today() {
 function TomarAsistencia() {
   const [cursoId, setCursoId] = useState<string>("");
   const [fecha, setFecha] = useState<string>(today());
+  // Solo guarda excepciones. Ausencia de clave = Presente por defecto.
   const [seleccion, setSeleccion] = useState<Record<string, Estado>>({});
 
   const cursosFn = useServerFn(getCursos);
@@ -73,7 +75,8 @@ function TomarAsistencia() {
     if (!asistenciaQ.data) return;
     const map: Record<string, Estado> = {};
     for (const r of asistenciaQ.data.registros) {
-      if (r.estado) map[r.dni] = r.estado;
+      // Solo excepciones cargadas anteriormente.
+      if (r.estado && r.estado !== "Presente") map[r.dni] = r.estado;
     }
     setSeleccion(map);
   }, [asistenciaQ.data]);
@@ -95,11 +98,17 @@ function TomarAsistencia() {
       const e = seleccion[a.dni];
       if (e) counts[e]++;
     }
+    counts.Presente = Math.max(0, alumnos.length - counts.Ausente - counts.Tarde - counts.Justificado);
     return counts;
   }, [alumnos, seleccion]);
 
-  function setEstado(dni: string, estado: Estado) {
-    setSeleccion((prev) => ({ ...prev, [dni]: estado }));
+  function toggleEstado(dni: string, estado: Estado) {
+    setSeleccion((prev) => {
+      const next = { ...prev };
+      if (next[dni] === estado) delete next[dni];
+      else next[dni] = estado;
+      return next;
+    });
   }
 
   function marcarTodos(estado: Estado) {
@@ -108,14 +117,21 @@ function TomarAsistencia() {
     setSeleccion(map);
   }
 
+  function limpiarExcepciones() {
+    setSeleccion({});
+  }
+
   function onGuardar() {
-    const registros = alumnos
-      .filter((a) => seleccion[a.dni])
-      .map((a) => ({ dni: a.dni, estado: seleccion[a.dni] }));
-    if (registros.length === 0) {
-      toast.error("Marcá al menos un alumno antes de guardar.");
+    if (alumnos.length === 0) {
+      toast.error("No hay alumnos en el curso.");
       return;
     }
+    // Enviamos TODOS los alumnos: los sin excepción como "Presente" (el servidor limpiará
+    // filas previas y no escribirá nuevas), y los marcados con su estado.
+    const registros = alumnos.map((a) => ({
+      dni: a.dni,
+      estado: (seleccion[a.dni] ?? "Presente") as Estado,
+    }));
     save.mutate({ data: { cursoId, fecha, registros } });
   }
 
@@ -125,7 +141,8 @@ function TomarAsistencia() {
       <div>
         <h1 className="text-xl md:text-2xl font-semibold tracking-tight">Tomar asistencia</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Elegí curso y fecha. Los cambios se sincronizan con la hoja ASISTENCIA del Sheet.
+          Todos los alumnos están <span className="font-medium text-foreground">Presente</span> por defecto.
+          Marcá solo las excepciones (Ausente, Tarde o Justificado). Tocá el mismo botón para desmarcar.
         </p>
       </div>
 
@@ -166,11 +183,14 @@ function TomarAsistencia() {
             <span className="w-full text-xs font-medium text-muted-foreground sm:w-auto sm:mr-2">
               Marcar todos:
             </span>
-            {ESTADOS.map((e) => (
+            {ESTADOS_UI.map((e) => (
               <Button key={e} size="sm" variant="outline" onClick={() => marcarTodos(e)}>
                 {e}
               </Button>
             ))}
+            <Button size="sm" variant="ghost" onClick={limpiarExcepciones}>
+              Limpiar
+            </Button>
             <div className="ml-auto flex flex-wrap gap-3 text-xs text-muted-foreground">
               <span>P: {resumen.Presente}</span>
               <span>A: {resumen.Ausente}</span>
@@ -192,19 +212,24 @@ function TomarAsistencia() {
             ) : (
               alumnos.map((a) => (
                 <div key={a.dni} className="rounded-lg border bg-card p-3">
-                  <div className="mb-2">
-                    <div className="font-medium text-sm">{a.apellido}, {a.nombre}</div>
-                    <div className="text-xs text-muted-foreground">DNI {a.dni}</div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-sm">{a.apellido}, {a.nombre}</div>
+                      <div className="text-xs text-muted-foreground">DNI {a.dni}</div>
+                    </div>
+                    {!seleccion[a.dni] && (
+                      <span className="text-[10px] uppercase tracking-wide text-emerald-700">Presente</span>
+                    )}
                   </div>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {ESTADOS.map((e) => {
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {ESTADOS_UI.map((e) => {
                       const active = seleccion[a.dni] === e;
                       return (
                         <Button
                           key={e}
                           size="sm"
                           variant={active ? "default" : "outline"}
-                          onClick={() => setEstado(a.dni, e)}
+                          onClick={() => toggleEstado(a.dni, e)}
                           className="h-10 px-0 text-xs"
                         >
                           {e}
@@ -224,7 +249,7 @@ function TomarAsistencia() {
                 <tr>
                   <th className="px-4 py-2">Alumno</th>
                   <th className="px-4 py-2">DNI</th>
-                  <th className="px-4 py-2 text-right">Estado</th>
+                  <th className="px-4 py-2 text-right">Estado (por defecto: Presente)</th>
                 </tr>
               </thead>
               <tbody>
@@ -238,15 +263,20 @@ function TomarAsistencia() {
                       <td className="px-4 py-2 font-medium">{a.apellido}, {a.nombre}</td>
                       <td className="px-4 py-2 text-muted-foreground">{a.dni}</td>
                       <td className="px-4 py-2">
-                        <div className="flex flex-wrap justify-end gap-1">
-                          {ESTADOS.map((e) => {
+                        <div className="flex flex-wrap items-center justify-end gap-1">
+                          {!seleccion[a.dni] && (
+                            <span className="mr-2 text-[10px] uppercase tracking-wide text-emerald-700">
+                              Presente
+                            </span>
+                          )}
+                          {ESTADOS_UI.map((e) => {
                             const active = seleccion[a.dni] === e;
                             return (
                               <Button
                                 key={e}
                                 size="sm"
                                 variant={active ? "default" : "outline"}
-                                onClick={() => setEstado(a.dni, e)}
+                                onClick={() => toggleEstado(a.dni, e)}
                                 className="h-8 px-2 text-xs"
                               >
                                 {e}

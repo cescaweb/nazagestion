@@ -13,6 +13,7 @@ import { getCursos } from "@/lib/attendance.functions";
 import { getMaterias } from "@/lib/grades.functions";
 import { getReportePreInformes } from "@/lib/preinformes.functions";
 import { BatchExportButton } from "@/components/BatchExportButton";
+import { canGeneratePdf } from "@/lib/permissions";
 
 export const Route = createFileRoute("/pre-informes/reporte")({
   head: () => ({ meta: [{ title: "Reporte de pre-informes · NAZARETH" }] }),
@@ -20,6 +21,10 @@ export const Route = createFileRoute("/pre-informes/reporte")({
 });
 
 function ReportePreInformes() {
+  const { session } = Route.useRouteContext() as {
+    session: import("@/lib/auth.functions").PublicSession;
+  };
+  const puedePdf = !!session && canGeneratePdf(session.rol);
   const [cursoId, setCursoId] = useState("");
   const [materia, setMateria] = useState("");
   const [periodo, setPeriodo] = useState<"Mayo" | "Octubre">("Mayo");
@@ -86,11 +91,11 @@ function ReportePreInformes() {
         </div>
       </div>
 
-      {cursoId && (
+      {cursoId && puedePdf && (
         <div className="rounded-lg border bg-card p-4">
           <div className="mb-2 text-sm font-medium text-foreground">Exportar curso completo</div>
           <p className="mb-3 text-xs text-muted-foreground">
-            Genera un ZIP con un PDF de pre-informe por cada alumno del curso (incluye todas sus materias y períodos cargados).
+            Genera un PDF con el pre-informe de cada alumno del curso (incluye todas sus materias y períodos cargados).
           </p>
           <BatchExportButton
             tipo="preinforme"

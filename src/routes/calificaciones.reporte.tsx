@@ -111,11 +111,11 @@ function ReporteMateria() {
         </div>
       </div>
 
-      {cursoId && (
+      {cursoId && puedePdf && (
         <div className="rounded-lg border bg-card p-4">
           <div className="mb-2 text-sm font-medium text-foreground">Exportar curso completo</div>
           <p className="mb-3 text-xs text-muted-foreground">
-            Genera un ZIP con un PDF de boletín por cada alumno del curso seleccionado.
+            Genera un PDF con el boletín de cada alumno del curso seleccionado.
           </p>
           <BatchExportButton
             tipo="boletin"

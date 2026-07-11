@@ -152,7 +152,10 @@ function FeriadosPage() {
         </p>
         <div className="flex flex-wrap gap-2">
           {nacionales.map((d) => (
-            <span key={d} className="rounded-md border bg-muted/30 px-2 py-1 text-xs text-muted-foreground">
+            <span
+              key={d}
+              className="rounded-md border border-orange-300 bg-orange-100 px-2 py-1 text-xs font-medium text-orange-800 dark:border-orange-500/40 dark:bg-orange-500/15 dark:text-orange-300"
+            >
               {formatFecha(d)}
             </span>
           ))}

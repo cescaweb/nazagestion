@@ -122,7 +122,7 @@ function DashboardPage() {
   const [cursoId, setCursoId] = useState<string>("");
   const [materia, setMateria] = useState<string>("");
   const [periodo, setPeriodo] = useState<string>("");
-  const [desde, setDesde] = useState(firstOfYear());
+  const [desde, setDesde] = useState(cicloInicio());
   const [hasta, setHasta] = useState(today());
   const [exporting, setExporting] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);

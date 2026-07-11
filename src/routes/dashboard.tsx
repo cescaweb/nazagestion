@@ -56,10 +56,10 @@ const PALETTE = {
   chart5: "var(--color-chart-5)",
 };
 
-function firstOfYear() {
-  const d = new Date();
-  return new Date(d.getFullYear(), 0, 1).toISOString().slice(0, 10);
+function cicloInicio() {
+  return "2026-03-09";
 }
+
 function today() {
   const d = new Date();
   const tz = d.getTimezoneOffset() * 60000;

@@ -12,6 +12,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Menu, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { getSessionFn, logoutFn, type PublicSession } from "@/lib/auth.functions";
 import { NAV_BY_ROL } from "@/lib/permissions";
 

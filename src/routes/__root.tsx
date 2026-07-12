@@ -173,6 +173,9 @@ function RootComponent() {
     return (
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen bg-background">
+          <div className="absolute right-3 top-3 z-50 rounded-md bg-primary/90 p-1 shadow-sm">
+            <ThemeToggle />
+          </div>
           <Outlet />
         </div>
       </QueryClientProvider>

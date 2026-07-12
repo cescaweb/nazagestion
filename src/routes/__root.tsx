@@ -266,7 +266,9 @@ function RootComponent() {
                 </nav>
               </SheetContent>
             </Sheet>
+            </div>
           </div>
+
         </header>
         <main className="mx-auto max-w-6xl px-4 py-5 md:px-6 md:py-8">
           <Outlet />

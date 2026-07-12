@@ -109,6 +109,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/up39Kb8IyDSOd0FfjNVcpP9i4lB2/social-images/social-1781609225402-logo_NAZ.webp" },
     ],
     links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
+      },
       {
         rel: "stylesheet",
         href: appCss,

@@ -12,6 +12,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Menu, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { getSessionFn, logoutFn, type PublicSession } from "@/lib/auth.functions";
 import { NAV_BY_ROL } from "@/lib/permissions";
 
@@ -109,6 +110,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/up39Kb8IyDSOd0FfjNVcpP9i4lB2/social-images/social-1781609225402-logo_NAZ.webp" },
     ],
     links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
+      },
       {
         rel: "stylesheet",
         href: appCss,
@@ -166,6 +173,9 @@ function RootComponent() {
     return (
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen bg-background">
+          <div className="absolute right-3 top-3 z-50 rounded-md bg-primary/90 p-1 shadow-sm">
+            <ThemeToggle />
+          </div>
           <Outlet />
         </div>
       </QueryClientProvider>
@@ -209,6 +219,7 @@ function RootComponent() {
                 <span className="text-xs text-primary-foreground/70">
                   {session.user} · <span className="font-semibold">{session.rol}</span>
                 </span>
+                <ThemeToggle />
                 <button
                   onClick={handleLogout}
                   className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-primary-foreground/80 hover:bg-white/10 hover:text-primary-foreground"
@@ -218,6 +229,9 @@ function RootComponent() {
                 </button>
               </div>
             </nav>
+
+            <div className="md:hidden flex items-center gap-1">
+              <ThemeToggle />
 
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger
@@ -255,7 +269,9 @@ function RootComponent() {
                 </nav>
               </SheetContent>
             </Sheet>
+            </div>
           </div>
+
         </header>
         <main className="mx-auto max-w-6xl px-4 py-5 md:px-6 md:py-8">
           <Outlet />

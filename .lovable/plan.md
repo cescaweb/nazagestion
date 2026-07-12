@@ -1,41 +1,34 @@
-# Arreglar generación de Boletín individual
+## Objetivo
 
-## Diagnóstico
+Modernizar la paleta y tipografía del sitio para un look juvenil y llamativo, sin tocar los PDFs (que ya están perfectos).
 
-- La página `/calificaciones/boletin` carga la búsqueda OK, pero al elegir un alumno no aparece el botón "Descargar PDF" y la consola muestra "This page didn't load".
-- El botón vive en `src/components/BoletinDownloadButton.tsx` y usa `React.lazy(() => import("@react-pdf/renderer"))`. Cuando ese chunk falla en cargar (`@react-pdf/renderer` v4 trae dependencias pesadas tipo `fontkit`/`buffer` que con frecuencia rompen el chunk en este entorno), el Suspense queda colgado y rompe el render del bloque del boletín → no se muestra el botón.
-- El mismo patrón está en `PreInformeDownloadButton.tsx` y en el `BatchExportButton.tsx` (descarga masiva), así que el problema es transversal a todo lo que dependa de `@react-pdf/renderer`.
-- En cambio, el Dashboard ya imprime PDFs correctamente usando `src/lib/pdf-export.ts` (html2canvas-pro + jsPDF), que sí funciona en este proyecto.
+## Decisiones
 
-## Plan
+- **Paleta Menta Neón**: base oscura profunda `#0d1b2a`, verde bosque `#1b4332`, acento primario menta `#2dd4a8`, glow `#73ffb8`. En modo claro se usa fondo casi blanco con acentos menta vibrantes; en oscuro, fondo navy con acentos neón brillantes.
+- **Tipografía**: Space Grotesk (títulos) + DM Sans (cuerpo), cargadas por `<link>` en `__root.tsx`.
+- **Toggle claro/oscuro** en el header/navbar principal, con persistencia en `localStorage` (lectura en `useEffect` para evitar mismatch SSR).
+- **PDFs intactos**: los printables (`PreInformePrintable`, `ReporteAsistenciaPrintable`, `BoletinPrintable`) usan estilos inline con hex fijos — no se tocan.
 
-1. **Migrar el Boletín individual a html2canvas + jsPDF**
-   - En `src/routes/calificaciones.boletin.tsx`, envolver la sección visible del boletín (encabezado del alumno, stats y tabla) en un `ref` apuntando a un contenedor preparado para impresión (fondo blanco, ancho fijo tipo A4, tipografía oscura para buena legibilidad).
-   - Reemplazar `<BoletinDownloadButton …>` por un botón normal que llame a `exportElementToPDF(ref.current, fileName, { title, subtitle })` desde `src/lib/pdf-export.ts`.
-   - Mostrar estado "Generando…" mientras corre y un toast de error si falla.
+## Cambios
 
-2. **Crear una vista "imprimible" del boletín**
-   - Añadir un componente `BoletinPrintable` (en `src/components/BoletinPrintable.tsx`) con el layout institucional (logo CESCA, datos del alumno, tabla de materias 1°C/2°C/Estado, stats y pie con firmas/leyenda) usando Tailwind + tokens existentes — pensado para captura con html2canvas (sin sombras raras, sin overflow oculto, colores semánticos seguros).
-   - Reutilizar este componente tanto en la pantalla como pasarlo a html2canvas para que el PDF se vea igual a lo que el usuario ve.
+1. **`src/routes/__root.tsx`**: agregar `<link>` a Google Fonts (Space Grotesk + DM Sans, con preconnect). Agregar clase `dark` condicional en `<html>` según preferencia.
+2. **`src/styles.css`**: reescribir tokens `:root` y `.dark` con la paleta Menta Neón en oklch, registrar `--font-sans` (DM Sans) y `--font-display` (Space Grotesk) en `@theme`, mantener estructura shadcn.
+3. **`src/components/ThemeToggle.tsx`** (nuevo): botón con íconos sol/luna que alterna la clase `dark` en `<html>` y guarda en `localStorage`.
+4. **Header/navegación**: montar el toggle donde ya está el menú principal (revisar `__root.tsx` o layout equivalente).
+5. **Aplicar fuente display** a headings mediante utility `font-display` en títulos clave (dashboard, login, secciones) sin cambiar layouts.
+6. **No tocar**: `PreInformePrintable.tsx`, `ReporteAsistenciaPrintable.tsx`, `BoletinPrintable.tsx`, ni `pdf-export.ts`.
 
-3. **Migrar Pre-Informe individual al mismo patrón**
-   - Crear `PreInformePrintable.tsx` y actualizar `src/routes/pre-informes.alumno.tsx` para usar `exportElementToPDF` en lugar de `PreInformeDownloadButton`.
+## Detalles técnicos
 
-4. **Migrar exportación masiva (`BatchExportButton`)**
-   - Reemplazar la generación con `@react-pdf/renderer` por un loop que: por cada alumno, monta `BoletinPrintable` en un contenedor fuera de pantalla, lo captura con html2canvas y lo agrega como página al mismo `jsPDF` (un PDF único con todos los boletines del curso).
-   - Mostrar progreso (X de N) en el botón.
+- Tokens oklch aproximados:
+  - Light: `--background` ~ oklch(0.99 0.005 180), `--foreground` ~ oklch(0.2 0.05 230), `--primary` ~ oklch(0.72 0.15 170) (menta), `--accent` ~ oklch(0.85 0.18 155) (glow).
+  - Dark: `--background` ~ oklch(0.18 0.04 240) (navy), `--foreground` ~ oklch(0.97 0.01 170), `--primary` ~ oklch(0.78 0.17 165), acentos con más luminosidad para efecto neón.
+- Sidebar en dark reutiliza el navy profundo con borde menta sutil.
+- Toggle: `useHydrated` pattern o `useEffect` para leer `localStorage.getItem('theme')` y aplicar clase en `document.documentElement`.
+- Verificación: capturar screenshots del dashboard, login y una sección interna en ambos modos vía Playwright para confirmar contraste y que no se rompa ningún componente shadcn.
 
-5. **Limpieza**
-   - Borrar `src/components/BoletinPDF.tsx`, `src/components/PreInformePDF.tsx`, `src/components/BoletinDownloadButton.tsx`, `src/components/PreInformeDownloadButton.tsx`.
-   - Quitar la dependencia `@react-pdf/renderer` de `package.json` para que no vuelva a romper builds.
+## Fuera de alcance
 
-6. **Verificación**
-   - Abrir `/calificaciones/boletin`, elegir un alumno, confirmar que se ve el bloque y que el botón descarga un PDF legible con datos correctos.
-   - Repetir en `/pre-informes/alumno`.
-   - Probar la descarga masiva por curso (si el usuario la usa).
-
-## Notas técnicas
-
-- `exportElementToPDF` ya parte el contenido en varias páginas A4 si es más alto que una hoja, así que boletines largos quedan multi-página automáticamente.
-- Para que html2canvas no recorte ni distorsione, el contenedor imprimible se renderiza con un ancho fijo (~800px), fondo blanco explícito y sin `overflow-hidden` en los padres directos durante la captura.
-- No se tocan los server functions (`getBoletinAlumno`, `getBoletinesCurso`) — los datos ya llegan bien; el problema es 100% de render del PDF en el cliente.
+- Rediseño de layouts o componentes.
+- Cambios en lógica de negocio, auth, Sheets.
+- PDFs y printables.

@@ -216,6 +216,7 @@ function RootComponent() {
                 <span className="text-xs text-primary-foreground/70">
                   {session.user} · <span className="font-semibold">{session.rol}</span>
                 </span>
+                <ThemeToggle />
                 <button
                   onClick={handleLogout}
                   className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-primary-foreground/80 hover:bg-white/10 hover:text-primary-foreground"
@@ -225,6 +226,9 @@ function RootComponent() {
                 </button>
               </div>
             </nav>
+
+            <div className="md:hidden flex items-center gap-1">
+              <ThemeToggle />
 
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger
